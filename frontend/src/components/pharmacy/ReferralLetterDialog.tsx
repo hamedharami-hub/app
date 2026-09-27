@@ -6,14 +6,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/hooks/useAuth";
 import { useBilingual } from "@/hooks/useBilingual";
 import type { PharmacyPracticeScenario, PharmacyReferralLetterTemplate } from "@/lib/pharmacyScenarioPractice";
-import { formatReferralLetter, readPharmacyLocal, writePharmacyLocal, type PharmacyReferralLetterDraft } from "@/lib/pharmacyPracticeStore";
+import { formatReferralLetter, type PharmacyReferralLetterDraft } from "@/lib/pharmacyPracticeStore";
+import type { PharmacyPracticeSaveResult } from "@/lib/pharmacyPracticeSync";
 import { PHARMACY_DIALOG_CLASS } from "./pharmacyDialogClass";
 
 type LetterField = keyof PharmacyReferralLetterTemplate | "notes";
-type Status = { kind: "idle" } | { kind: "saved" } | { kind: "copied" } | { kind: "failed"; message: string };
+type Status = { kind: "idle" } | { kind: "saving" } | { kind: "saved" } | { kind: "queued" } | { kind: "remote-newer" } | { kind: "copied" } | { kind: "failed"; message: string };
 
 const emptyDraft = (scenario: PharmacyPracticeScenario): Omit<PharmacyReferralLetterDraft, "updatedAt"> => ({
   to: "",
@@ -28,11 +28,12 @@ interface ReferralLetterDialogProps {
   scenario: PharmacyPracticeScenario;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  savedDraft: PharmacyReferralLetterDraft | undefined;
+  onSave: (draft: PharmacyReferralLetterDraft) => Promise<PharmacyPracticeSaveResult>;
 }
 
-export function ReferralLetterDialog({ scenario, open, onOpenChange }: ReferralLetterDialogProps) {
+export function ReferralLetterDialog({ scenario, open, onOpenChange, savedDraft, onSave }: ReferralLetterDialogProps) {
   const { T, lang } = useBilingual();
-  const { user } = useAuth();
   const [draft, setDraft] = useState(() => emptyDraft(scenario));
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [showTemplate, setShowTemplate] = useState(false);
@@ -40,21 +41,27 @@ export function ReferralLetterDialog({ scenario, open, onOpenChange }: ReferralL
 
   useEffect(() => {
     if (!open) return;
-    const saved = readPharmacyLocal<Record<string, PharmacyReferralLetterDraft>>(user?.id, "referral-letters", {})[scenario.id];
+    const saved = savedDraft;
     setDraft(saved ? { to: saved.to, reason: saved.reason, symptomSummary: saved.symptomSummary, currentMeds: saved.currentMeds, suggestedAction: saved.suggestedAction, notes: saved.notes } : emptyDraft(scenario));
     setStatus({ kind: "idle" });
     setShowTemplate(false);
-  }, [open, scenario, user?.id]);
+    // Only reset when the dialog opens or the case changes, not on every background sync.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, scenario]);
 
   const update = (field: LetterField, value: string) => {
     setDraft((previous) => ({ ...previous, [field]: value }));
     setStatus({ kind: "idle" });
   };
 
-  const saveDraft = () => {
-    const all = readPharmacyLocal<Record<string, PharmacyReferralLetterDraft>>(user?.id, "referral-letters", {});
-    const result = writePharmacyLocal(user?.id, "referral-letters", { ...all, [scenario.id]: { ...draft, updatedAt: new Date().toISOString() } });
-    setStatus(result.ok ? { kind: "saved" } : { kind: "failed", message: result.reason === "signed-out" ? T("برای ذخیره وارد حساب شو.", "Sign in to save drafts.") : T("حافظهٔ دستگاه در دسترس نیست.", "Device storage is unavailable.") });
+  const saveDraft = async () => {
+    setStatus({ kind: "saving" });
+    const result = await onSave({ ...draft, updatedAt: new Date().toISOString() });
+    if (result.status === "failed") {
+      setStatus({ kind: "failed", message: result.reason === "signed-out" ? T("برای ذخیره وارد حساب شو.", "Sign in to save drafts.") : T("حافظهٔ دستگاه یا صف همگام‌سازی در دسترس نیست.", "Device storage or the sync queue is unavailable.") });
+    } else {
+      setStatus({ kind: result.status });
+    }
   };
 
   const copyLetter = async () => {
@@ -111,7 +118,9 @@ export function ReferralLetterDialog({ scenario, open, onOpenChange }: ReferralL
           </div>
         )}
 
-        {status.kind === "saved" && <p role="status" data-testid="referral-status-saved" className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300"><CheckCircle2 className="h-4 w-4" aria-hidden="true" />{T("پیش‌نویس روی همین دستگاه ذخیره شد (همگام نمی‌شود).", "Draft saved on this device (not synced).")}</p>}
+        {status.kind === "saved" && <p role="status" data-testid="referral-status-saved" className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300"><CheckCircle2 className="h-4 w-4" aria-hidden="true" />{T("پیش‌نویس ذخیره و همگام شد.", "Draft saved and synced.")}</p>}
+        {status.kind === "queued" && <p role="status" data-testid="referral-status-queued" className="flex items-center gap-2 text-sm text-sky-700 dark:text-sky-300"><CheckCircle2 className="h-4 w-4" aria-hidden="true" />{T("روی دستگاه ذخیره شد؛ پس از اتصال همگام می‌شود.", "Saved on this device; it will sync when you are back online.")}</p>}
+        {status.kind === "remote-newer" && <p role="status" data-testid="referral-status-remote-newer" className="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300"><TriangleAlert className="h-4 w-4" aria-hidden="true" />{T("نسخهٔ جدیدتری از دستگاه دیگر وجود داشت و نگه داشته شد.", "A newer draft from another device was kept.")}</p>}
         {status.kind === "copied" && <p role="status" data-testid="referral-status-copied" className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300"><CheckCircle2 className="h-4 w-4" aria-hidden="true" />{T("متن نامه کپی شد.", "Letter copied.")}</p>}
         {status.kind === "failed" && <p role="alert" data-testid="referral-status-failed" className="flex items-center gap-2 text-sm text-destructive"><TriangleAlert className="h-4 w-4" aria-hidden="true" />{status.message}</p>}
 
@@ -120,7 +129,7 @@ export function ReferralLetterDialog({ scenario, open, onOpenChange }: ReferralL
         )}
         <DialogFooter className="gap-2 sm:gap-2">
           <Button type="button" variant="outline" className="gap-1.5" onClick={copyLetter} data-testid="referral-copy-btn"><ClipboardCopy className="h-4 w-4" aria-hidden="true" />{T("کپی متن", "Copy text")}</Button>
-          <Button type="button" className="gap-1.5" onClick={saveDraft} disabled={!draft.to.trim() && !draft.reason.trim()} data-testid="referral-save-btn"><Save className="h-4 w-4" aria-hidden="true" />{T("ذخیرهٔ پیش‌نویس", "Save draft")}</Button>
+          <Button type="button" className="gap-1.5" onClick={saveDraft} disabled={status.kind === "saving" || (!draft.to.trim() && !draft.reason.trim())} data-testid="referral-save-btn"><Save className="h-4 w-4" aria-hidden="true" />{T("ذخیرهٔ پیش‌نویس", "Save draft")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

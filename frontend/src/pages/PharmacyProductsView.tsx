@@ -11,6 +11,7 @@ import { DrugComparisonDialog } from "@/components/pharmacy/DrugComparisonDialog
 import { PharmacyDocumentDialog } from "@/components/pharmacy/PharmacyDocumentDialog";
 import { PharmacyRegulatoryInfoDialog, type PharmacyRegulatoryTopic } from "@/components/pharmacy/PharmacyRegulatoryInfoDialog";
 import { PharmacyStudyActions } from "@/components/pharmacy/PharmacyStudyActions";
+import { UrlParamListener } from "@/components/pharmacy/UrlParamListener";
 import { PHARMACY_DIALOG_CLASS } from "@/components/pharmacy/pharmacyDialogClass";
 import { useBilingual } from "@/hooks/useBilingual";
 import { PHARMACY_PRODUCT_CATALOG } from "@/lib/pharmacyProductCatalogData";
@@ -72,6 +73,7 @@ export default function PharmacyProductsView() {
 
   return (
     <main className="mx-auto w-full max-w-6xl space-y-5 px-3 py-4 pb-24 sm:px-5 sm:py-6" dir={isEn ? "ltr" : "rtl"}>
+      <UrlParamListener name="product" onValue={(id) => setSelectedProduct(PHARMACY_PRODUCT_CATALOG.find((product) => product.id === id) ?? null)} />
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <div className="rounded-2xl bg-primary/10 p-3 text-primary" aria-hidden="true"><PackageSearch className="h-6 w-6" /></div>

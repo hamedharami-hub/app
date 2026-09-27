@@ -24,7 +24,7 @@ export function StarButton({ starred, onToggle, testId }: { starred: boolean; on
 
 interface StarredPhrasesPanelProps {
   phrases: PharmacyStarredPhrase[];
-  onRemove: (target: StarTarget) => void;
+  onRemove: (target: StarTarget) => void | Promise<void>;
   scenarioTitle: (scenarioId: string) => string;
   documentIdFor: (scenarioId: string) => string | null;
 }
@@ -38,7 +38,7 @@ export function StarredPhrasesPanel({ phrases, onRemove, scenarioTitle, document
     <section aria-labelledby="starred-phrases-heading" className="space-y-2" data-testid="starred-phrases-panel">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="starred-phrases-heading" className="flex items-center gap-1.5 text-base font-semibold"><Star className="h-4 w-4 fill-amber-400 text-amber-500" aria-hidden="true" />{T("عبارت‌های ستاره‌دار", "Starred phrases")}</h2>
-        <span className="text-xs text-muted-foreground">{T("فقط روی همین دستگاه ذخیره می‌شود", "Saved on this device only")}</span>
+        <span className="text-xs text-muted-foreground">{T("بین دستگاه‌های حساب تو همگام می‌شود", "Synced across your devices")}</span>
       </div>
       {phrases.length ? (
         <ul className="space-y-2">

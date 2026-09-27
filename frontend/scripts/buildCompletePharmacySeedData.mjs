@@ -3076,3 +3076,46 @@ export const PHARMACY_PRACTICE_SCENARIOS: PharmacyPracticeScenario[] = ${JSON.st
 `;
 fs.writeFileSync(path.join(targetDir, 'pharmacyScenarioPracticeData.ts'), scenarioPracticeCode, 'utf8');
 console.log(`Successfully written ${pharmacyPracticeScenarios.length} structured, unreviewed practice scenarios to src/lib/pharmacyScenarioPracticeData.ts!`);
+
+const toCypEntry = (entry) => ({
+  name: entry.name,
+  nameFa: entry.nameFa || '',
+  category: entry.category,
+  notesFa: entry.notesFa || '',
+  notesEn: entry.notesEn || '',
+});
+const pharmacyCypEnzymes = Object.values(CYP_ENZYMES_DATABASE || {}).map((cyp) => ({
+  id: cyp.id,
+  name: cyp.name,
+  titleFa: cyp.titleFa,
+  titleEn: cyp.titleEn,
+  overviewFa: cyp.overviewFa || '',
+  overviewEn: cyp.overviewEn || '',
+  documentId: `doc-cyp-${cyp.id.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+  inhibitors: (cyp.inhibitors || []).map(toCypEntry),
+  inducers: (cyp.inducers || []).map(toCypEntry),
+  substrates: (cyp.substrates || []).map(toCypEntry),
+}));
+const pharmacyCypPairs = (COMMON_PAIR_INTERACTIONS || []).map((pair) => ({ ...pair }));
+const cypCode = `// Generated from Pharmacy main at ${sourceCommit}; do not edit by hand. Educational, unreviewed.
+import type { PharmacyCypEnzyme, PharmacyCypPairInteraction } from './pharmacyCyp';
+
+export const PHARMACY_CYP_ENZYMES: PharmacyCypEnzyme[] = ${JSON.stringify(pharmacyCypEnzymes, null, 2)};
+
+export const PHARMACY_CYP_PAIR_INTERACTIONS: PharmacyCypPairInteraction[] = ${JSON.stringify(pharmacyCypPairs, null, 2)};
+`;
+fs.writeFileSync(path.join(targetDir, 'pharmacyCypData.ts'), cypCode, 'utf8');
+console.log(`Successfully written ${pharmacyCypEnzymes.length} CYP enzyme profiles and ${pharmacyCypPairs.length} pair interactions to src/lib/pharmacyCypData.ts!`);
+
+const searchIndex = finalizedDocuments.map((document) => ({
+  id: document.id,
+  title: document.title || '',
+  titleEn: document.title_en || '',
+}));
+const searchIndexCode = `// Generated from Pharmacy main at ${sourceCommit}; do not edit by hand. Titles only, for instant search.
+export interface PharmacyDocumentSearchEntry { id: string; title: string; titleEn: string }
+
+export const PHARMACY_DOCUMENT_SEARCH_INDEX: PharmacyDocumentSearchEntry[] = ${JSON.stringify(searchIndex)};
+`;
+fs.writeFileSync(path.join(targetDir, 'pharmacySearchIndexData.ts'), searchIndexCode, 'utf8');
+console.log(`Successfully written ${searchIndex.length} document titles to src/lib/pharmacySearchIndexData.ts!`);
