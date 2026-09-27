@@ -83,3 +83,7 @@ android-sdk/
 
 # overlay black-box crash/user-report dumps — session data, never history
 **/.emergent/recordings/
+
+# Emergent-only local files (kept on disk, never published)
+frontend/.yarnrc
+frontend/dev-preview/

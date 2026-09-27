@@ -152,6 +152,9 @@ function CypChecker({ selectedKeys, onChange, onOpenDocument }: { selectedKeys: 
           <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={T("دارو اضافه کن…", "Add a medicine…")} aria-label={T("افزودن دارو به بررسی", "Add a medicine to check")} className="ps-9" data-testid="cyp-checker-search" />
         </div>
+        {query.trim() && suggestions.length === 0 && (
+          <p className="text-xs text-muted-foreground" data-testid="cyp-checker-not-in-dataset">{T("این دارو در دادهٔ محدود CYP منبع نیست؛ نبودنش به معنی بی‌تداخل بودن نیست.", "This medicine is not in the limited source CYP dataset; absence does not mean it has no interactions.")}</p>
+        )}
         {suggestions.length > 0 && (
           <ul className="flex max-w-2xl flex-wrap gap-1.5" data-testid="cyp-checker-suggestions">
             {suggestions.map((drug) => (
