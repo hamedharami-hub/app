@@ -115,6 +115,9 @@ export function ReferralLetterDialog({ scenario, open, onOpenChange }: ReferralL
         {status.kind === "copied" && <p role="status" data-testid="referral-status-copied" className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300"><CheckCircle2 className="h-4 w-4" aria-hidden="true" />{T("متن نامه کپی شد.", "Letter copied.")}</p>}
         {status.kind === "failed" && <p role="alert" data-testid="referral-status-failed" className="flex items-center gap-2 text-sm text-destructive"><TriangleAlert className="h-4 w-4" aria-hidden="true" />{status.message}</p>}
 
+        {!draft.to.trim() && !draft.reason.trim() && (
+          <p className="text-xs text-muted-foreground" data-testid="referral-save-hint">{T("برای ذخیره، دست‌کم گیرنده یا علت ارجاع را بنویس.", "Fill in at least the recipient or the reason to save.")}</p>
+        )}
         <DialogFooter className="gap-2 sm:gap-2">
           <Button type="button" variant="outline" className="gap-1.5" onClick={copyLetter} data-testid="referral-copy-btn"><ClipboardCopy className="h-4 w-4" aria-hidden="true" />{T("کپی متن", "Copy text")}</Button>
           <Button type="button" className="gap-1.5" onClick={saveDraft} disabled={!draft.to.trim() && !draft.reason.trim()} data-testid="referral-save-btn"><Save className="h-4 w-4" aria-hidden="true" />{T("ذخیرهٔ پیش‌نویس", "Save draft")}</Button>

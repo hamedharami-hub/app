@@ -1,0 +1,24 @@
+{
+  "summary": "Frontend-only interactive testing of ARSHNAZ Pharmacy dev-preview harness (scenario + products, EN + FA + mobile). Covered starring persistence, Knowledge dialog origin snapshot, full scenario 4-step flow (Case→Questions→Response→Debrief) with disabled Continue logic, referral letter dialog + draft persistence + source-template compare, Leitner queued/failed behaviour with fake user, restart, and Products view: 121/121 count, all 4 regulatory dialogs with 'Educational and unreviewed', grouping by mechanism with mechanism-doc button, sort options (brand/generic/schedule/mechanism), Reset, compare bar (disabled@1, enabled@2, refuses 4th with toast 'You can compare up to 3 medicines.'), compare dialog table, product detail conditional buttons (S3 on Nyxoid/Canesten, SafeScript on S8 Durogesic, Project STOP on Sudafed pseudoephedrine, CAL, monograph, mechanism, make card, schedule task). RTL/Persian labels + dialog dir=rtl + no horizontal overflow + full-screen dialog on 390x844 all verified. No functional bugs found.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Global (all views)", "issues": ["Digits render with Persian glyphs even in English mode (e.g. 'B1.' shows Persian '1', '32 cases' as '٣٢') due to global font. Pre-existing/known per main agent — not classified as a bug."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ReferralLetterDialog Save button is enabled only when 'to' OR 'reason' has non-empty trimmed value — this is intentional but could confuse users; consider a subtle helper text near disabled Save (minor UX).",
+    "PharmacyDocumentDialog body currently has no in-content anchor/button in the fake-user seed snapshot, so the 'Previous document' back-navigation path could not be exercised interactively. If dynamic in-body links are expected in real content, add a smoke fixture in tests to exercise pushDoc/back to prevent regressions."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped)", "frontend": "100% of executed interactive checks (~55 assertions)"},
+  "test_credentials": "None; live Firebase intentionally not used. Harness signs in a fictional user.",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Use dev-preview harness URLs: /dev-preview/pharmacy.html?view=scenario|products&lang=en|fa. Wait ~8s for Vite dev bundle. Referral save requires 'to' or 'reason' to be filled (not just notes). Leitner save with fake user is expected to end in queued/failed, not saved. In-body clickable links in pharmacy-document-dialog body were not present in the current seed snapshot, so the pushDoc/back UI path could not be verified interactively (only via unit tests)."
+}
