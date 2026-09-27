@@ -1,0 +1,23 @@
+{
+  "summary": "Frontend-only interactive testing of ARSHNAZ round-2 features via dev-preview harness (fake Firestore-unreachable user). Verified: FRED Workflow (label & CAL step, final check with S8 register, Safety Net calculator with General/Concessional/entitlement/premium/negative/under-copayment, ODT dosing log with dose-mismatch/duplicate/id/signature/takeaway-label validations, gap detection, reset); CYP Matrix (76 medicines, disclaimer 'Educational and unreviewed', search filter, enzyme-doc buttons open pharmacy-document-dialog, add-<drug> buttons, checker tab with warfarin+fluconazole high-signal source pair + management note 'not treatment advice' + Leitner card button opens pharmacy-leitner-dialog, omeprazole+clopidogrel prodrug wording, rifampicin+simvastatin 'may lower' induction wording, unrelated pair no-findings 'does not mean safe', <2 drugs empty state); Command Palette (Ctrl+K, 'nurofen' → 1 product + 2 scenario hits, 'CYP3A4' → command-palette-pharmacy-doc-doc-cyp-cyp3a4, Persian 'ایبوپروفن' → 4 pharmacy hits, 1-char shows no pharmacy group, all 4 new nav entries present, scenario hit navigates to ?scenario= URL); Sync (data-state=error, text 'Sync failed; data is safe on this device', star toast 'Saved on this device; it will sync when you are back online.', local cache key arshnaz:pharmacy:records:qa-harness-user, star persists after reload, unstar removes after reload — never 'saved and synced'); Mobile 390x844 lang=fa: html dir=rtl, no page-level horizontal overflow on FRED or CYP.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Global (all views)", "issues": ["Digits render with Persian glyphs even in English mode (pre-existing / known / global font)."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "CYP unrelated-pair test: 'paracetamol' and 'amoxicillin' are not present in the 76-medicine CYP dataset, so users who search these common names get zero suggestions with no explanatory empty-state in the checker search (silent). Consider adding a subtle 'not in this dataset' hint below the checker search to avoid confusion; core no-findings behaviour with in-dataset drugs (amlodipine+apixaban) works as specified."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped)", "frontend": "100% of executed interactive checks (~55 assertions across FRED/CYP/Palette/Sync/mobile-RTL)"},
+  "test_credentials": "None; live Firebase intentionally not used. Harness signs in fictional qa-harness-user.",
+  "seed_data_creation": "None (persisted 1 starred phrase during test then unstarred; final DB state clean).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Star buttons in scenario view use testid scenario-star-phrase-<i> / scenario-star-reply-<i> (NOT pharmacy-phrase-star-*). Fake Firestore user makes networkidle unreliable — use wait_until='domcontentloaded' + fixed 10-14s wait. Sync-state indicator settles on data-state=error after ~14s. Local cache key arshnaz:pharmacy:records:qa-harness-user. CYP dataset is 76 meds; use in-dataset drugs (amlodipine+apixaban) to exercise the no-findings branch. All round-2 features (FRED workflow label/check/safetynet/odt, CYP matrix + interaction checker, Command Palette pharmacy group + new nav entries, cross-device sync wording) verified as specified."
+}

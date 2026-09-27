@@ -20,6 +20,14 @@ Repo https://github.com/hamedharami-hub/Arshiam (ARSHNAZ). Approved plan (Persia
 - Parity audit doc updated with the verified gap table.
 - Gate: tsc OK, eslint 0 errors, vitest 916/916 (+2 new targeted), vite build OK; testing agent 100%.
 
+## Implemented (2026-09-27, round 2)
+- FRED "Full workflow" module: label + APF CAL selection vs source product CALs, pharmacist final check with release/hold feedback (expired S8 always held), PBS Safety Net calculator (editable 1 Jan 2026 amounts: $25.00/$1,748.20 general, $7.70/$277.20 concessional), fictional ODT dosing log with validation and missed-day gaps.
+- /app/pharmacy-cyp: searchable CYP/P-gp matrix (76 medicines from source) + multi-drug checker (source pairs + rule-based inhibition/induction, prodrug wording); educational/unreviewed; management notes hidden behind "not treatment advice".
+- Command Palette: Pharmacy group (scenarios, products, 279 Knowledge docs via lazy title index) + deep links ?scenario= / ?product=.
+- Starred phrases, referral drafts, case progress synced via users/{uid}/pharmacy_practice (LWW + tombstones, outbox fallback, legacy migration, honest saved/queued/remote-newer/failed states).
+- Parity doc corrected (phase-1 FRED row was wrong). Gate: tsc OK, eslint 0 errors, vitest 946/946, build OK; testing agent iteration_2 100%.
+- Publishing: user will use Save to GitHub (accepts frontend/ restructure). dev-preview/ and .yarnrc are git-ignored (kept locally); package.json "start" kept because the Emergent preview needs it.
+
 ## Backlog
 - P1 (Phase 2): FRED labelling/CAL, final check, PBS Safety Net calculator, document retention sorting, ODT log; CYP matrix + DDI checker; study tracks/chapter planning linked to tasks; unread filter + per-section progress; Command Palette search for Pharmacy items; mobile shelf card deck; Persian translation gaps.
 - P2: cloud sync for starred phrases/referral drafts/progress; real-device mobile/foldable QA; authenticated QA with a test account.
